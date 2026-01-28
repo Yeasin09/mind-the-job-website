@@ -32,17 +32,17 @@ export const Navbar = () => {
     return (
         <nav
             className={`fixed w-full z-50 transition-all duration-300 ${isScrolled || location.pathname !== '/'
-                ? 'bg-surface/90 backdrop-blur-md shadow-sm py-4'
-                : 'bg-transparent py-6'
+                ? 'bg-surface/90 backdrop-blur-md shadow-sm py-2'
+                : 'bg-transparent py-4'
                 }`}
         >
-            <div className={`relative z-20 container mx-auto px-4 md:px-6 flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-24' : 'h-32'}`}>
+            <div className={`relative z-20 container mx-auto px-4 md:px-6 flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-16' : 'h-24'}`}>
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2 group">
                     <img
                         src="/logo.png"
                         alt="Mind the Job"
-                        className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-16' : 'h-28'} mix-blend-multiply`}
+                        className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-12' : 'h-24'} mix-blend-multiply`}
                     />
                 </Link>
 

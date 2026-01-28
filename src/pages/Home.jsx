@@ -25,7 +25,7 @@ export const Home = () => {
     return (
         <div className="">
             {/* Hero Section */}
-            <section className="relative min-h-[90vh] flex items-center pt-40 overflow-hidden">
+            <section className="relative min-h-[90vh] flex items-center pt-32 overflow-hidden">
                 {/* Background Image */}
                 <div className="absolute inset-0 z-0">
                     <img

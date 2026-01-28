@@ -3,7 +3,7 @@ import { Button } from '../components/ui/Button';
 
 export const Contact = () => {
     return (
-        <div className="min-h-screen bg-surface-muted pt-40 pb-20">
+        <div className="min-h-screen bg-surface-muted pt-32 pb-20">
             <div className="container mx-auto px-4 md:px-6">
                 <div className="text-center max-w-2xl mx-auto mb-16">
                     <h1 className="text-4xl font-bold text-primary mb-4">Get in Touch</h1>

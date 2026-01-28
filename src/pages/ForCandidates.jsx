@@ -94,7 +94,7 @@ export const ForCandidates = () => {
     };
 
     return (
-        <div className="min-h-screen bg-surface-muted pt-40 pb-20">
+        <div className="min-h-screen bg-surface-muted pt-32 pb-20">
             <div className="container mx-auto px-4 md:px-6">
 
                 {/* Header / Import Section */}
