@@ -16,6 +16,29 @@ import { Auth } from './pages/Auth';
 import ScrollToTop from './components/utils/ScrollToTop';
 
 function App() {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-red-50">
+        <h1 className="text-3xl font-bold text-red-600 mb-4">Setup Required</h1>
+        <p className="max-w-md text-gray-700 mb-8">
+          The Supabase credentials are missing from the Vercel Environment Variables.
+        </p>
+        <div className="bg-white p-6 rounded-lg shadow-md text-left w-full max-w-lg">
+          <p className="font-bold mb-2">Please add these to Vercel Settings:</p>
+          <code className="block bg-gray-100 p-2 rounded mb-2 text-sm text-red-500">
+            VITE_SUPABASE_URL
+          </code>
+          <code className="block bg-gray-100 p-2 rounded mb-2 text-sm text-red-500">
+            VITE_SUPABASE_ANON_KEY
+          </code>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <ScrollToTop />
