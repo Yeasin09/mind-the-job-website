@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/ui/Button';
-import { CheckCircle, Briefcase, TrendingUp, Shield, Clock, DollarSign, MapPin, Plus, User, Lock } from 'lucide-react';
+import { CheckCircle, Briefcase, TrendingUp, Shield, Clock, DollarSign, MapPin, Plus, User, Lock, Globe, Building2, Link, Search } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+import { useNavigate } from 'react-router-dom';
 
 const Step1RoleType = ({ onNext }) => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
@@ -127,92 +129,6 @@ const Step2Details = ({ onNext, onBack }) => {
     );
 }
 
-const DashboardSimulation = ({ formData }) => {
-    return (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-left">
-            <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
-                <div>
-                    <h3 className="text-2xl font-bold text-primary">Hiring Dashboard</h3>
-                    <p className="text-text-muted text-sm">Welcome back, Rossi</p>
-                </div>
-                <Button variant="outline" className="text-xs h-9">
-                    <Plus className="w-3 h-3 mr-2" /> New Role
-                </Button>
-            </div>
-
-            <div className="space-y-8">
-                {/* Active Role Card */}
-                <div>
-                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Just Posted</h4>
-                    <div className="bg-white border-2 border-secondary/20 rounded-xl p-6 shadow-sm relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 bg-secondary text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-                            Pending Review
-                        </div>
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="text-lg font-bold text-primary mb-1">{formData.roleTitle || 'New Role'}</h3>
-                                <div className="flex items-center gap-3 text-sm text-gray-500">
-                                    <span className="flex items-center gap-1"><MapPin size={14} /> {formData.location}</span>
-                                    <span className="flex items-center gap-1"><Clock size={14} /> {formData.urgency}</span>
-                                </div>
-                            </div>
-                            <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                Live
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
-                            <div className="text-sm">
-                                <span className="text-gray-400 block text-xs">Candidates</span>
-                                <strong>0</strong> <span className="text-gray-400">Applications</span>
-                            </div>
-                            <div className="flex-1"></div>
-                            <Button variant="ghost" className="text-secondary hover:text-secondary hover:bg-secondary/5 h-8 text-xs">Manage Role</Button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Candidate Pipepline Teaser */}
-                <div>
-                    <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Suggested Candidates</h4>
-                        <span className="text-xs text-secondary font-bold cursor-pointer hover:underline">View All Matches</span>
-                    </div>
-
-                    <div className="space-y-3">
-                        {[1, 2].map((i) => (
-                            <div key={i} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 opacity-70">
-                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-400">
-                                    <User size={20} />
-                                </div>
-                                <div className="flex-1 filter blur-[3px] select-none">
-                                    <div className="h-4 bg-gray-300 rounded w-32 mb-2"></div>
-                                    <div className="h-3 bg-gray-200 rounded w-24"></div>
-                                </div>
-                                <div className="text-xs font-bold text-gray-400 flex items-center gap-1">
-                                    <Lock size={12} />
-                                    Premium Match
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="bg-primary/5 p-4 rounded-xl mt-4 text-center">
-                        <p className="text-sm text-primary font-medium mb-2">We are currently matching candidates to your new role.</p>
-                        <p className="text-xs text-text-muted">You will receive your first batch of vetted profiles within 24 hours.</p>
-                    </div>
-                </div>
-            </div>
-        </motion.div>
-    );
-};
-
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '../components/ui/Button';
-import { supabase } from '../lib/supabaseClient';
-import { Building2, MapPin, Globe, Users, Briefcase, ChevronRight, CheckCircle, ArrowLeft, Clock, DollarSign, Search } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 export const ForCompanies = () => {
     const [step, setStep] = useState(1);
