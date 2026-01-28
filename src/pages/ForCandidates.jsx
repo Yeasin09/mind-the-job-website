@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import { Linkedin, Video, Upload, User, MapPin, Play, Briefcase, Lock, Plus, Trash2, GraduationCap } from 'lucide-react';
 import { MONTHS, YEARS, UK_CITIES, COUNTRIES } from '../data/formConstants';
+import { supabase } from '../lib/supabaseClient';
 
 export const ForCandidates = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isEditMode, setIsEditMode] = useState(true);
-    const [isImporting, setIsImporting] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
+    // Initial Empty State
     const [profileData, setProfileData] = useState({
         firstName: "",
         middleName: "",
@@ -16,8 +18,8 @@ export const ForCandidates = () => {
         city: "",
         country: "United Kingdom",
         experienceYears: "",
-        skills: ["Add Skill..."],
-        bio: "Write a short bio about yourself...",
+        skills: [],
+        bio: "",
         salary: "",
         notice: "",
         roleType: "",
@@ -29,54 +31,64 @@ export const ForCandidates = () => {
         educationList: []
     });
 
-    const simulateLogin = () => {
-        setProfileData({
-            ...profileData,
-            firstName: "Sarah",
-            middleName: "J.",
-            lastName: "Jenkins",
-            city: "London",
-            country: "United Kingdom",
-            experienceYears: "6",
-            skills: ["User Testing", "Figma", "Agile", "Accessibility", "Wireframing"],
-            bio: "Passionate about creating human-centered digital experiences. Specialized in accessible design systems and empathetic research methodologies that bridge the gap between user needs and business goals.",
-            salary: "£65k - £80k",
-            notice: "1 Month",
-            roleType: "Hybrid / Remote",
-            email: "sarah.j@example.com",
-            phone: "+44 7700 900000",
-            workAuth: "UK Citizen",
-            avatar: "https://i.pravatar.cc/300?img=5",
-            experienceList: [
-                {
-                    id: 1,
-                    role: "Senior UX Researcher",
-                    company: "TechFlow Systems",
-                    startMonth: "Jan", startYear: "2021",
-                    endMonth: "Present", endYear: "2024",
-                    description: "Leading user research for the core product suite, improving conversion by 15% through data-driven design iterations."
+    useEffect(() => {
+        fetchProfile();
+    }, []);
+
+    const fetchProfile = async () => {
+        setIsLoading(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (user) {
+                setIsLoggedIn(true);
+                // Fetch Profile Data
+                const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile) {
+                    // Map DB snake_case to frontend camelCase
+                    // Note: 'full_name' might need splitting if we only stored full_name
+                    const nameParts = (profile.full_name || "").split(" ");
+                    setProfileData(prev => ({
+                        ...prev,
+                        firstName: nameParts[0] || "",
+                        lastName: nameParts.slice(1).join(" ") || "", // Simple split fallback
+                        email: profile.email || user.email,
+                        city: profile.city || "",
+                        country: profile.country || "United Kingdom",
+                        bio: profile.bio || "",
+                        phone: profile.phone || "",
+                        avatar: profile.avatar_url,
+                        // Add other mappings as schema expands
+                    }));
+                } else {
+                    // New user, prepopulate email
+                    setProfileData(prev => ({ ...prev, email: user.email }));
+                    setIsEditMode(true); // Force edit mode for new profiles
                 }
-            ],
-            educationList: [
-                {
-                    id: 1,
-                    degree: "BSc Psychology",
-                    institution: "UCL",
-                    startMonth: "Sep", startYear: "2015",
-                    endMonth: "Jun", endYear: "2018"
-                }
-            ]
-        });
-        setIsLoggedIn(true);
-        setIsEditMode(false);
+
+                // Fetch Experiences (Optional: Implement separate fetch)
+            } else {
+                setIsLoggedIn(false);
+            }
+        } catch (error) {
+            console.error("Error fetching profile:", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const simulateImport = () => {
-        setIsImporting(true);
-        setTimeout(() => {
-            simulateLogin(); // Using same mock data for import simulation
-            setIsImporting(false);
-        }, 2000);
+        // This is a placeholder for LinkedIn import functionality
+        // For now, it could simulate a login or just show a loading state
+        console.log("Simulating LinkedIn import...");
+        // You might want to remove this function if real import is not implemented yet
+        // or replace it with a proper LinkedIn OAuth flow.
+        // For demonstration, let's just log and do nothing else for now.
     };
 
     const handleImageUpload = (e) => {
@@ -87,10 +99,35 @@ export const ForCandidates = () => {
         }
     };
 
-    // Helper to render Name
-    const getFullName = () => {
-        const { firstName, middleName, lastName } = profileData;
-        return `${firstName} ${middleName ? middleName + ' ' : ''}${lastName}`.trim() || "Your Name";
+    const handleSaveProfile = async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                alert("You must be logged in to save.");
+                return;
+            }
+
+            const updates = {
+                id: user.id,
+                email: profileData.email,
+                full_name: `${profileData.firstName} ${profileData.middleName} ${profileData.lastName}`.trim(),
+                city: profileData.city,
+                country: profileData.country,
+                bio: profileData.bio,
+                phone: profileData.phone,
+                // Add other fields as schema expands
+                // avatar_url: profileData.avatar // Need storage bucket for this
+                updated_at: new Date(),
+            };
+
+            const { error } = await supabase.from('profiles').upsert(updates);
+            if (error) throw error;
+
+            alert("Profile saved successfully!");
+            setIsEditMode(false);
+        } catch (error) {
+            alert("Error saving profile: " + error.message);
+        }
     };
 
     return (
@@ -601,13 +638,11 @@ export const ForCandidates = () => {
                         {isEditMode && (
                             <div className="bg-gray-50 border-t border-gray-100 p-8 flex justify-center mt-12 rounded-b-3xl">
                                 <Button
-                                    onClick={() => {
-                                        alert("Profile Saved Successfully!");
-                                        if (isLoggedIn) setIsEditMode(false);
-                                    }}
-                                    className="w-full md:w-auto bg-primary hover:bg-primary/90 text-white px-12 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2 font-bold"
+                                    onClick={handleSaveProfile}
+                                    disabled={isLoading}
+                                    className="w-full md:w-auto bg-primary hover:bg-primary/90 text-white px-12 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2 font-bold disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
-                                    {isLoggedIn ? 'Save & View Profile' : 'Save Profile Changes'}
+                                    {isLoggedIn ? (isLoading ? 'Saving...' : 'Save & View Profile') : 'Save Profile Changes'}
                                 </Button>
                             </div>
                         )}

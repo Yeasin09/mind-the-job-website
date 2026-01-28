@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Briefcase, ChevronRight, Linkedin } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import { supabase } from '../lib/supabaseClient';
 
 export const Auth = () => {
     const [view, setView] = useState('login'); // 'login', 'signup', 'forgot'
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -14,56 +16,74 @@ export const Auth = () => {
     });
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (view === 'forgot') {
-            alert("Password Reset Link Sent to your email! (Mock)");
-            setView('login');
-            return;
-        }
-        alert(`${view === 'login' ? 'Login' : 'Sign Up'} Successful! (Mock)`);
-        navigate('/');
-    };
+        setIsLoading(true);
+        const { email, password, fullname, role } = formData;
 
-    const handleGoogleLogin = () => {
-        // Simulate OAuth Popup/Redirect
-        const width = 500;
-        const height = 600;
-        const left = (window.innerWidth - width) / 2;
-        const top = (window.innerHeight - height) / 2;
-
-        // In a real app, this would open the provider's auth page.
-        // For mock, we'll just show a confirming alert or simulate a delay.
-        const mockWindow = window.open('', 'Google Login', `width=${width},height=${height},top=${top},left=${left}`);
-        if (mockWindow) {
-            mockWindow.document.write('<h1>Connecting to Google...</h1><p>Please wait...</p>');
-            setTimeout(() => {
-                mockWindow.close();
-                alert("Successfully connected with Google! (Mock)");
-                navigate('/candidates'); // Assuming candidate role default
-            }, 1500);
-        } else {
-            alert("Popup blocked! Please allow popups for login.");
-        }
-    };
-
-    const handleLinkedinLogin = () => {
-        // Simulate OAuth Popup/Redirect
-        const width = 500;
-        const height = 600;
-        const left = (window.innerWidth - width) / 2;
-        const top = (window.innerHeight - height) / 2;
-
-        const mockWindow = window.open('', 'LinkedIn Login', `width=${width},height=${height},top=${top},left=${left}`);
-        if (mockWindow) {
-            mockWindow.document.write('<h1>Connecting to LinkedIn...</h1><p>Please wait...</p>');
-            setTimeout(() => {
-                mockWindow.close();
-                alert("Successfully connected with LinkedIn! (Mock)");
+        try {
+            if (view === 'signup') {
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            full_name: fullname,
+                            role: role,
+                        },
+                    },
+                });
+                if (error) throw error;
+                alert('Sign up successful! Please check your email to verify your account.');
+                setView('login');
+            } else if (view === 'login') {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
+                if (error) throw error;
+                // Redirect based on role (fetch profile if needed, or default to candidates for now)
                 navigate('/candidates');
-            }, 1500);
-        } else {
-            alert("Popup blocked! Please allow popups for login.");
+            } else if (view === 'forgot') {
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/auth?view=reset',
+                });
+                if (error) throw error;
+                alert('Password Reset Link Sent to your email!');
+                setView('login');
+            }
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/candidates', // Redirect back to app
+                }
+            });
+            if (error) throw error;
+        } catch (error) {
+            alert(error.message);
+        }
+    };
+
+    const handleLinkedinLogin = async () => {
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'linkedin',
+                options: {
+                    redirectTo: window.location.origin + '/candidates',
+                }
+            });
+            if (error) throw error;
+        } catch (error) {
+            alert(error.message);
         }
     };
 
@@ -236,10 +256,11 @@ export const Auth = () => {
 
                             <Button
                                 type="submit"
-                                className="w-full bg-primary hover:bg-primary/95 text-white py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all font-bold text-base mt-4 flex items-center justify-center gap-2 group"
+                                disabled={isLoading}
+                                className="w-full bg-primary hover:bg-primary/95 text-white py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all font-bold text-base mt-4 flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {isForgot ? 'Send Reset Link' : (isLogin ? 'Sign In' : 'Create Account')}
-                                <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                {isLoading ? 'Processing...' : (isForgot ? 'Send Reset Link' : (isLogin ? 'Sign In' : 'Create Account'))}
+                                {!isLoading && <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />}
                             </Button>
 
                             {!isForgot && (
