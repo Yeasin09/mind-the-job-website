@@ -82,14 +82,7 @@ export const ForCandidates = () => {
         }
     };
 
-    const simulateImport = () => {
-        // This is a placeholder for LinkedIn import functionality
-        // For now, it could simulate a login or just show a loading state
-        console.log("Simulating LinkedIn import...");
-        // You might want to remove this function if real import is not implemented yet
-        // or replace it with a proper LinkedIn OAuth flow.
-        // For demonstration, let's just log and do nothing else for now.
-    };
+
 
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
@@ -143,20 +136,12 @@ export const ForCandidates = () => {
                         <div className="flex flex-col md:flex-row justify-center items-center gap-4">
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                 <Button
-                                    onClick={simulateImport}
-                                    disabled={isImporting}
-                                    className="bg-[#0077b5] hover:bg-[#006396] text-white px-8 py-4 text-lg rounded-xl shadow-xl flex items-center gap-3"
+                                    variant="secondary"
+                                    onClick={() => alert("LinkedIn Import Coming Soon!")}
+                                    className="bg-[#0077b5] hover:bg-[#0077b5]/90 text-white px-8 py-4 text-lg rounded-xl shadow-xl flex items-center gap-3 border-0"
                                 >
-                                    {isImporting ? (
-                                        <span className="flex items-center gap-2">
-                                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                            Importing...
-                                        </span>
-                                    ) : (
-                                        <>
-                                            <Linkedin fill="currentColor" /> Auto-Fill from LinkedIn
-                                        </>
-                                    )}
+                                    <Linkedin size={18} />
+                                    Import from LinkedIn
                                 </Button>
                             </motion.div>
 
