@@ -5,7 +5,7 @@ import { blogPosts } from '../data/blogData';
 
 export const Blog = () => {
     return (
-        <div className="min-h-screen bg-surface-muted pt-24 pb-20">
+        <div className="min-h-screen bg-surface-muted pt-40 pb-20">
             <div className="container mx-auto px-4 md:px-6">
                 <div className="mb-16 text-center">
                     <h1 className="text-4xl font-bold text-primary mb-4">Industry Insights</h1>

@@ -1,6 +1,6 @@
 export const Terms = () => {
     return (
-        <div className="min-h-screen bg-surface-muted pt-24 pb-20">
+        <div className="min-h-screen bg-surface-muted pt-40 pb-20">
             <div className="container mx-auto px-4 md:px-6 max-w-3xl">
                 <h1 className="text-4xl font-bold text-primary mb-8">Terms of Service</h1>
                 <div className="bg-white p-8 md:p-12 rounded-2xl shadow-sm prose prose-lg max-w-none text-gray-600">

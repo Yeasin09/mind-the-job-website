@@ -22,7 +22,7 @@ export const BlogPost = () => {
     }
 
     return (
-        <div className="min-h-screen bg-surface-muted pt-24 pb-20">
+        <div className="min-h-screen bg-surface-muted pt-40 pb-20">
             <div className="container mx-auto px-4 md:px-6 max-w-4xl">
                 <Link to="/blog" className="inline-flex items-center text-secondary font-medium mb-8 hover:underline">
                     <ArrowLeft size={18} className="mr-2" /> Back to Articles

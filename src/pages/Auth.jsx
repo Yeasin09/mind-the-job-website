@@ -72,7 +72,7 @@ export const Auth = () => {
     const isForgot = view === 'forgot';
 
     return (
-        <div className="min-h-screen pt-24 pb-20 flex items-center justify-center bg-surface-muted relative overflow-hidden">
+        <div className="min-h-screen pt-40 pb-20 flex items-center justify-center bg-surface-muted relative overflow-hidden">
             {/* Background Decorative Elements */}
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
                 <div className="absolute top-[10%] left-[5%] w-72 h-72 bg-secondary/10 rounded-full blur-3xl animate-pulse"></div>
