@@ -207,17 +207,81 @@ const DashboardSimulation = ({ formData }) => {
     );
 };
 
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '../components/ui/Button';
+import { supabase } from '../lib/supabaseClient';
+import { Building2, MapPin, Globe, Users, Briefcase, ChevronRight, CheckCircle, ArrowLeft, Clock, DollarSign, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 export const ForCompanies = () => {
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        companyName: '',
+        website: '',
+        roleTitle: '',
+        location: '',
+        salaryRange: '',
+        jobType: 'Full-time',
+        description: ''
+    });
+    const navigate = useNavigate();
 
     const handleNext = (data) => {
-        setFormData({ ...formData, ...data });
-        setStep(step + 1);
+        const updatedData = { ...formData, ...data };
+        setFormData(updatedData);
+
+        if (step === 2) {
+            handlePostJob(updatedData);
+        } else {
+            setStep(step + 1);
+        }
+    };
+
+    const handlePostJob = async (finalData) => {
+        setIsLoading(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                alert("Please login to post a job.");
+                navigate('/auth?view=login&role=employer');
+                return;
+            }
+
+            // 1. Update Employer Profile
+            await supabase.from('profiles').upsert({
+                id: user.id,
+                role: 'employer',
+                company: finalData.companyName,
+            });
+
+            const { error: jobError } = await supabase.from('jobs').insert({
+                employer_id: user.id,
+                title: finalData.roleTitle,
+                description: finalData.description || "No description provided",
+                location: finalData.location,
+                salary_range: finalData.salaryRange,
+                type: finalData.jobType,
+                status: 'active'
+            });
+
+            if (jobError) throw jobError;
+
+            alert("Job Posted Successfully! We will review it shortly.");
+            setStep(1);
+            setFormData({});
+
+        } catch (error) {
+            alert("Error posting job: " + error.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
         <div className="min-h-screen bg-surface-muted pt-32 pb-20">
+
             <div className="container mx-auto px-4 md:px-6">
                 <div className="max-w-4xl mx-auto">
                     <div className="mb-10 text-center">
@@ -239,10 +303,10 @@ export const ForCompanies = () => {
                             {step === 2 && <Step2Details key="s2" onNext={handleNext} onBack={() => setStep(1)} />}
                         </AnimatePresence>
 
-                        {/* Simulated Dashboard View */}
-                        {step === 3 && (
+                        {/* Simulated Dashboard View - Removed for Live Version */}
+                        {/* {step === 3 && (
                             <DashboardSimulation formData={formData} />
-                        )}
+                        )} */}
                     </div>
 
                     {/* Simulated Dashboard Stats Below */}
