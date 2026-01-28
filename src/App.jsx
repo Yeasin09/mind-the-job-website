@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { Home } from './pages/Home';
@@ -14,6 +14,34 @@ import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
 import { Auth } from './pages/Auth';
 import ScrollToTop from './components/utils/ScrollToTop';
+import { useEffect } from 'react';
+import { supabase } from './lib/supabaseClient';
+
+// Helper component to handle auth redirects
+const AuthRedirectHandler = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        // Only redirect if on public pages like Home or Auth
+        if (location.pathname === '/' || location.pathname === '/auth') {
+          const role = session?.user?.user_metadata?.role;
+          if (role === 'employer') {
+            navigate('/companies');
+          } else {
+            navigate('/candidates');
+          }
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, location]);
+
+  return null;
+};
 
 function App() {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -42,6 +70,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
+      <AuthRedirectHandler />
       <div className="min-h-screen flex flex-col font-sans text-text-main bg-surface-muted">
         <Navbar />
         <main className="flex-grow pt-0">
