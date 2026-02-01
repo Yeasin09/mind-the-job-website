@@ -145,14 +145,7 @@ export const ForCandidates = () => {
                                 </Button>
                             </motion.div>
 
-                            <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={simulateLogin}
-                                className="px-8 py-4 text-lg font-bold text-primary border-2 border-primary/20 hover:border-primary/40 rounded-xl transition-all"
-                            >
-                                Sign in as Sarah (Demo)
-                            </motion.button>
+
                         </div>
                         <p className="text-xs text-gray-400 mt-3">Or fill in your details manually to see the live profile.</p>
                     </div>
