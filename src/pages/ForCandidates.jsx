@@ -92,6 +92,10 @@ export const ForCandidates = () => {
         }
     };
 
+    const getFullName = () => {
+        return `${profileData.firstName} ${profileData.middleName} ${profileData.lastName}`.trim();
+    };
+
     const handleSaveProfile = async () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
