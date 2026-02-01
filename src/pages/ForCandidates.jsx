@@ -74,6 +74,7 @@ export const ForCandidates = () => {
                 // Fetch Experiences (Optional: Implement separate fetch)
             } else {
                 setIsLoggedIn(false);
+                setIsEditMode(true); // Allow guests to fill the form
             }
         } catch (error) {
             console.error("Error fetching profile:", error);
