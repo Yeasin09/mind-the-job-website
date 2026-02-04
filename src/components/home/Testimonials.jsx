@@ -4,27 +4,27 @@ import { Quote, Star } from 'lucide-react';
 const testimonials = [
     {
         id: 1,
-        quote: "Mind the Job has a forward way of thinking & aren't afraid to try new things when other agencies will just say it is not possible. I would highly recommend them to any scaling tech team.",
-        author: "Matt King",
-        role: "CTO",
-        company: "Wincanton Tech",
-        image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200&h=200"
+        quote: "Mind the Job transformed our hiring process. They found us candidates who weren't just skilled, but perfectly aligned with our company culture.",
+        author: "James Wilson",
+        role: "Director of Operations",
+        company: "Apex Logistics Solutions",
+        image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200&h=200"
     },
     {
         id: 2,
-        quote: "The answer to our staffing shortage was creative solutions, and Mind the Job delivered. They found people from untapped pools and brought them into our workflow seamlessly.",
-        author: "Paul Thirkell",
-        role: "Head of Talent",
-        company: "iForce",
-        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200&h=200"
+        quote: "We struggled to find specialized talent for months. Their team understood our technical requirements immediately and delivered results in record time.",
+        author: "Sarah Chen",
+        role: "Head of Product",
+        company: "TechFlow Innovations",
+        image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200&h=200"
     },
     {
         id: 3,
-        quote: "We love working with them. Our industry means that our staff needs fluctuate greatly and they are always able to react quickly and deliver our needs.",
-        author: "Chris Burr",
+        quote: "Professional, reliable, and incredibly efficient. They are more than a recruitment agency; they are strategic partners in our growth.",
+        author: "Michael Ross",
         role: "Managing Director",
-        company: "G4S Events",
-        image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200&h=200"
+        company: "Summit Event Group",
+        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200&h=200"
     }
 ];
 
