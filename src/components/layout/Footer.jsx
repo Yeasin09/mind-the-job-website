@@ -94,9 +94,9 @@ export const Footer = () => {
                     <div>
                         <h4 className="text-lg font-semibold mb-6 text-secondary">Contact</h4>
                         <ul className="space-y-4 text-gray-300">
-                            <li>London, United Kingdom</li>
-                            <li><a href="mailto:hello@mindthejob.com" className="hover:text-white transition-colors">hello@mindthejob.com</a></li>
-                            <li>+44 (0) 20 1234 5678</li>
+                            <li>13 Lanark Square, London, E14 9QD</li>
+                            <li><a href="mailto:info@mindthejob.com" className="hover:text-white transition-colors">info@mindthejob.com</a></li>
+                            <li>+44 (0) 7956 063717</li>
                             <li><Link to="/contact" className="text-secondary hover:text-white font-medium transition-colors">Send us a message &rarr;</Link></li>
                         </ul>
                     </div>

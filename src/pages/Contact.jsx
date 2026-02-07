@@ -22,7 +22,7 @@ export const Contact = () => {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-gray-900">Our Office</h4>
-                                        <p className="text-gray-500">123 Business Street<br />London, UK EC1V 2NX</p>
+                                        <p className="text-gray-500">13 Lanark Square<br />London, United Kingdom<br />E14 9QD</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4">
@@ -31,7 +31,7 @@ export const Contact = () => {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-gray-900">Email</h4>
-                                        <p className="text-gray-500">hello@mindthejob.com</p>
+                                        <p className="text-gray-500">info@mindthejob.com</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4">
@@ -40,7 +40,7 @@ export const Contact = () => {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-gray-900">Phone</h4>
-                                        <p className="text-gray-500">+44 (0) 20 1234 5678</p>
+                                        <p className="text-gray-500">+44 (0) 7956 063717</p>
                                     </div>
                                 </div>
                             </div>
