@@ -37,8 +37,23 @@ export const Auth = () => {
                     },
                 });
                 if (error) throw error;
-                alert('Sign up successful! Please check your email to verify your account.');
-                setView('login');
+
+                // Check if user is auto-logged in (Verification Disabled)
+                if (data.session) {
+                    // 1. Send Welcome Email (Fire and forget, don't block UI)
+                    fetch('/api/send-welcome-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, firstName }),
+                    }).catch(err => console.error("Failed to send welcome email:", err));
+
+                    // 2. Redirect immediately
+                    navigate('/candidates');
+                } else {
+                    // Fallback if verification is still ON (Script didn't run or config mismatch)
+                    alert('Sign up successful! Please check your email to verify your account.');
+                    setView('login');
+                }
             } else if (view === 'login') {
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email,
