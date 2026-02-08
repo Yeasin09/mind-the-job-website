@@ -100,7 +100,11 @@ export const ForCandidates = () => {
                         bio: profile.bio || "",
                         phone: profile.phone || "",
                         avatar: profile.avatar_url,
-                        experienceYears: "", // Not stored in DB explicitly in schema yet, keep local or add column
+                        experienceYears: profile.experience_years || "",
+                        salary: profile.salary || "",
+                        notice: profile.notice_period || "",
+                        roleType: profile.role_type || "",
+                        workAuth: profile.work_auth || "Select Status",
                         experienceList: mappedExperience,
                         educationList: mappedEducation
                     }));
@@ -158,6 +162,11 @@ export const ForCandidates = () => {
                 country: profileData.country,
                 bio: profileData.bio,
                 phone: profileData.phone,
+                role_type: profileData.roleType,
+                salary: profileData.salary,
+                notice_period: profileData.notice,
+                work_auth: profileData.workAuth,
+                experience_years: profileData.experienceYears,
                 updated_at: new Date(),
             };
 
