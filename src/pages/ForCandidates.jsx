@@ -65,29 +65,47 @@ export const ForCandidates = () => {
                 if (profile) {
                     const nameParts = (profile.full_name || "").split(" ");
 
+                    // Helper to safely parse dates
+                    const parseDate = (dateString) => {
+                        if (!dateString) return { month: 'Jan', year: '2024' };
+                        const d = new Date(dateString);
+                        if (isNaN(d.getTime())) return { month: 'Jan', year: '2024' }; // Invalid date fallback
+                        return {
+                            month: d.toLocaleString('default', { month: 'short' }),
+                            year: d.getFullYear().toString()
+                        };
+                    };
+
                     // Map Experiences (DB -> Frontend)
-                    const mappedExperience = (experiences || []).map(exp => ({
-                        id: exp.id,
-                        role: exp.role,
-                        company: exp.company,
-                        description: exp.description || "",
-                        // Parse dates (stored as YYYY-MM-DD or similar, simplified here)
-                        startMonth: exp.start_date ? new Date(exp.start_date).toLocaleString('default', { month: 'short' }) : 'Jan',
-                        startYear: exp.start_date ? new Date(exp.start_date).getFullYear().toString() : '2024',
-                        endMonth: exp.is_current ? 'Present' : (exp.end_date ? new Date(exp.end_date).toLocaleString('default', { month: 'short' }) : 'Jan'),
-                        endYear: exp.is_current ? 'Present' : (exp.end_date ? new Date(exp.end_date).getFullYear().toString() : '2024')
-                    }));
+                    const mappedExperience = (experiences || []).map(exp => {
+                        const start = parseDate(exp.start_date);
+                        const end = exp.is_current ? { month: 'Present', year: 'Present' } : parseDate(exp.end_date);
+                        return {
+                            id: exp.id,
+                            role: exp.role || "",
+                            company: exp.company || "",
+                            description: exp.description || "",
+                            startMonth: start.month,
+                            startYear: start.year,
+                            endMonth: end.month,
+                            endYear: end.year
+                        };
+                    });
 
                     // Map Education (DB -> Frontend)
-                    const mappedEducation = (education || []).map(edu => ({
-                        id: edu.id,
-                        institution: edu.institution,
-                        degree: edu.degree,
-                        startMonth: edu.start_date ? new Date(edu.start_date).toLocaleString('default', { month: 'short' }) : 'Sep',
-                        startYear: edu.start_date ? new Date(edu.start_date).getFullYear().toString() : '2020',
-                        endMonth: edu.end_date ? new Date(edu.end_date).toLocaleString('default', { month: 'short' }) : 'Jun',
-                        endYear: edu.end_date ? new Date(edu.end_date).getFullYear().toString() : '2023'
-                    }));
+                    const mappedEducation = (education || []).map(edu => {
+                        const start = parseDate(edu.start_date);
+                        const end = parseDate(edu.end_date);
+                        return {
+                            id: edu.id,
+                            institution: edu.institution || "",
+                            degree: edu.degree || "",
+                            startMonth: start.month,
+                            startYear: start.year,
+                            endMonth: end.month,
+                            endYear: end.year
+                        };
+                    });
 
                     setProfileData(prev => ({
                         ...prev,
@@ -99,7 +117,7 @@ export const ForCandidates = () => {
                         country: profile.country || "United Kingdom",
                         bio: profile.bio || "",
                         phone: profile.phone || "",
-                        avatar: profile.avatar_url,
+                        avatar: profile.avatar_url, // Note: This needs Supabase Storage to work for real uploads
                         experienceYears: profile.experience_years || "",
                         salary: profile.salary || "",
                         notice: profile.notice_period || "",
@@ -174,11 +192,11 @@ export const ForCandidates = () => {
             if (profileError) throw profileError;
 
             // 2. Save Experiences (Sync: Delete all logic for simplicity or Upsert)
-            // Strategy: Upsert all current items. If ID is number (frontend-only), remove it so DB gen UUID.
+            // 2. Save Experiences
             const experienceUpserts = profileData.experienceList.map(exp => {
                 const isNew = typeof exp.id === 'number';
                 return {
-                    id: isNew ? undefined : exp.id, // Let DB gen ID if new
+                    id: isNew ? undefined : exp.id,
                     profile_id: user.id,
                     role: exp.role,
                     company: exp.company,
@@ -190,18 +208,16 @@ export const ForCandidates = () => {
                 };
             });
 
-            // First, delete items not in the list (Clean up deleted items)
-            // Simplified: We accept that we won't delete logic right now to avoid complex diffing, 
-            // OR we just upsert. If user deleted in UI, it stays in DB for now (v1 limitation).
-            // BETTER: Delete all for this user and rewrite? Safer for consistency.
-            await supabase.from('experiences').delete().eq('profile_id', user.id);
             if (experienceUpserts.length > 0) {
-                await supabase.from('experiences').insert(experienceUpserts);
+                const { error: expError } = await supabase.from('experiences').upsert(experienceUpserts);
+                if (expError) console.error("Error saving experiences:", expError);
             }
 
             // 3. Save Education
             const educationUpserts = profileData.educationList.map(edu => {
+                const isNew = typeof edu.id === 'number';
                 return {
+                    id: isNew ? undefined : edu.id,
                     profile_id: user.id,
                     institution: edu.institution,
                     degree: edu.degree,
@@ -210,17 +226,17 @@ export const ForCandidates = () => {
                 };
             });
 
-            await supabase.from('education').delete().eq('profile_id', user.id);
             if (educationUpserts.length > 0) {
-                await supabase.from('education').insert(educationUpserts);
+                const { error: eduError } = await supabase.from('education').upsert(educationUpserts);
+                if (eduError) console.error("Error saving education:", eduError);
             }
 
             alert("Profile saved successfully!");
             setIsEditMode(false);
             fetchProfile(); // Refresh IDs
         } catch (error) {
-            console.error(error);
-            alert("Error saving profile: " + error.message);
+            console.error("Full Save Error:", error);
+            alert("Error saving profile: " + (error.message || error.details || "Unknown error"));
         } finally {
             setIsLoading(false);
         }
