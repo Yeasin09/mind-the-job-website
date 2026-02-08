@@ -105,6 +105,7 @@ export const ForCandidates = () => {
                         educationList: mappedEducation
                     }));
                 } else {
+                } else {
                     // Fallback: Use Auth Metadata if profile doesn't exist yet
                     const meta = user.user_metadata || {};
                     setProfileData(prev => ({
@@ -113,7 +114,7 @@ export const ForCandidates = () => {
                         firstName: meta.first_name || (meta.full_name ? meta.full_name.split(' ')[0] : ""),
                         lastName: meta.last_name || (meta.full_name ? meta.full_name.split(' ').slice(1).join(' ') : "")
                     }));
-                    setIsEditMode(true);
+                    setIsEditMode(true); // <--- FORCE Edit Mode here for new users
                 }
             } else {
                 setIsLoggedIn(false);
