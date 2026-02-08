@@ -105,7 +105,14 @@ export const ForCandidates = () => {
                         educationList: mappedEducation
                     }));
                 } else {
-                    setProfileData(prev => ({ ...prev, email: user.email }));
+                    // Fallback: Use Auth Metadata if profile doesn't exist yet
+                    const meta = user.user_metadata || {};
+                    setProfileData(prev => ({
+                        ...prev,
+                        email: user.email,
+                        firstName: meta.first_name || (meta.full_name ? meta.full_name.split(' ')[0] : ""),
+                        lastName: meta.last_name || (meta.full_name ? meta.full_name.split(' ').slice(1).join(' ') : "")
+                    }));
                     setIsEditMode(true);
                 }
             } else {
