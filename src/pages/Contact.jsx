@@ -50,43 +50,41 @@ export const Contact = () => {
 
                     {/* Contact Form */}
                     <div className="bg-white p-8 rounded-2xl shadow-sm">
-                        {/* Contact Form */}
-                        <div className="bg-white p-8 rounded-2xl shadow-sm">
-                            <ContactForm />
-                        </div>
+                        <ContactForm />
                     </div>
                 </div>
             </div>
-            );
+        </div>
+    );
 };
 
 const ContactForm = () => {
-    const [formData, setFormData] = useState({name: '', email: '', message: '' });
-            const [status, setStatus] = useState('idle'); // idle, loading, success, error
+    const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+    const [status, setStatus] = useState('idle'); // idle, loading, success, error
 
     const handleSubmit = async (e) => {
-                e.preventDefault();
-            setStatus('loading');
+        e.preventDefault();
+        setStatus('loading');
 
-            try {
+        try {
             const response = await fetch('/api/send-email', {
                 method: 'POST',
-            headers: {'Content-Type': 'application/json' },
-            body: JSON.stringify(formData),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
             });
 
             if (response.ok) {
                 setStatus('success');
-            setFormData({name: '', email: '', message: '' });
+                setFormData({ name: '', email: '', message: '' });
             } else {
                 setStatus('error');
             }
         } catch (error) {
-                setStatus('error');
+            setStatus('error');
         }
     };
 
-            if (status === 'success') {
+    if (status === 'success') {
         return (
             <div className="text-center py-12">
                 <div className="bg-green-100 text-green-600 p-4 rounded-full inline-block mb-4">
@@ -96,55 +94,50 @@ const ContactForm = () => {
                 <p className="text-gray-500 mb-6">We'll get back to you shortly.</p>
                 <Button onClick={() => setStatus('idle')} variant="outline">Send Another</Button>
             </div>
-            );
+        );
     }
 
-            return (
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                    <input
-                        type="text"
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-secondary"
-                        placeholder="Your Name"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input
-                        type="email"
-                        required
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-secondary"
-                        placeholder="your@email.com"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                    <textarea
-                        required
-                        value={formData.message}
-                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-secondary h-32"
-                        placeholder="How can we help?"
-                    ></textarea>
-                </div>
-                <Button className="w-full" disabled={status === 'loading'}>
-                    {status === 'loading' ? 'Sending...' : 'Send Message'}
-                </Button>
-                {status === 'error' && (
-                    <p className="text-red-500 text-sm text-center">Something went wrong. Please try again.</p>
-                )}
-            </form>
-            );
-};
-        </div>
-                </div >
-            </div >
-        </div >
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-secondary"
+                    placeholder="Your Name"
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-secondary"
+                    placeholder="your@email.com"
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea
+                    required
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-secondary h-32"
+                    placeholder="How can we help?"
+                ></textarea>
+            </div>
+            <Button className="w-full" disabled={status === 'loading'}>
+                {status === 'loading' ? 'Sending...' : 'Send Message'}
+            </Button>
+            {status === 'error' && (
+                <p className="text-red-500 text-sm text-center">Something went wrong. Please try again.</p>
+            )}
+        </form>
     );
 };
+
