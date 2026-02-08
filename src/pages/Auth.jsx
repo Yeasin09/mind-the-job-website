@@ -11,7 +11,8 @@ export const Auth = () => {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
-        fullname: '',
+        firstName: '',
+        lastName: '',
         role: 'candidate'
     });
     const navigate = useNavigate();
@@ -19,7 +20,7 @@ export const Auth = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        const { email, password, fullname, role } = formData;
+        const { email, password, firstName, lastName, role } = formData;
 
         try {
             if (view === 'signup') {
@@ -28,7 +29,9 @@ export const Auth = () => {
                     password,
                     options: {
                         data: {
-                            full_name: fullname,
+                            first_name: firstName,
+                            last_name: lastName,
+                            full_name: `${firstName} ${lastName}`.trim(),
                             role: role,
                         },
                     },
@@ -166,28 +169,52 @@ export const Auth = () => {
                         <form onSubmit={handleSubmit} className="p-8 pt-0 space-y-4">
                             <AnimatePresence mode='wait'>
                                 {isSignup && (
-                                    <motion.div
-                                        key="fullname"
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="space-y-1"
-                                    >
-                                        <label className="text-xs font-bold text-gray-400 uppercase ml-1">Full Name</label>
-                                        <div className="relative group">
-                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-secondary transition-colors">
-                                                <User size={18} />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <motion.div
+                                            key="firstName"
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="space-y-1"
+                                        >
+                                            <label className="text-xs font-bold text-gray-400 uppercase ml-1">First Name</label>
+                                            <div className="relative group">
+                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-secondary transition-colors">
+                                                    <User size={18} />
+                                                </div>
+                                                <input
+                                                    required
+                                                    type="text"
+                                                    placeholder="John"
+                                                    className="w-full bg-surface-muted border-2 border-transparent focus:border-secondary/20 focus:bg-white focus:outline-none rounded-2xl py-3 pl-12 pr-4 transition-all"
+                                                    value={formData.firstName}
+                                                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                                                />
                                             </div>
-                                            <input
-                                                required
-                                                type="text"
-                                                placeholder="John Doe"
-                                                className="w-full bg-surface-muted border-2 border-transparent focus:border-secondary/20 focus:bg-white focus:outline-none rounded-2xl py-3 pl-12 pr-4 transition-all"
-                                                value={formData.fullname}
-                                                onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
-                                            />
-                                        </div>
-                                    </motion.div>
+                                        </motion.div>
+                                        <motion.div
+                                            key="lastName"
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="space-y-1"
+                                        >
+                                            <label className="text-xs font-bold text-gray-400 uppercase ml-1">Last Name</label>
+                                            <div className="relative group">
+                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-secondary transition-colors">
+                                                    <User size={18} />
+                                                </div>
+                                                <input
+                                                    required
+                                                    type="text"
+                                                    placeholder="Doe"
+                                                    className="w-full bg-surface-muted border-2 border-transparent focus:border-secondary/20 focus:bg-white focus:outline-none rounded-2xl py-3 pl-12 pr-4 transition-all"
+                                                    value={formData.lastName}
+                                                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                                />
+                                            </div>
+                                        </motion.div>
+                                    </div>
                                 )}
                             </AnimatePresence>
 

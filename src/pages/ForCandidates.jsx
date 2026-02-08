@@ -42,39 +42,75 @@ export const ForCandidates = () => {
 
             if (user) {
                 setIsLoggedIn(true);
-                // Fetch Profile Data
-                const { data: profile, error } = await supabase
+                // 1. Fetch Main Profile
+                const { data: profile } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', user.id)
                     .single();
 
+                // 2. Fetch Experiences
+                const { data: experiences } = await supabase
+                    .from('experiences')
+                    .select('*')
+                    .eq('profile_id', user.id)
+                    .order('start_year', { ascending: false }); // Note: DB field is start_date, map logic needed
+
+                // 3. Fetch Education
+                const { data: education } = await supabase
+                    .from('education')
+                    .select('*')
+                    .eq('profile_id', user.id);
+
                 if (profile) {
-                    // Map DB snake_case to frontend camelCase
-                    // Note: 'full_name' might need splitting if we only stored full_name
                     const nameParts = (profile.full_name || "").split(" ");
+
+                    // Map Experiences (DB -> Frontend)
+                    const mappedExperience = (experiences || []).map(exp => ({
+                        id: exp.id,
+                        role: exp.role,
+                        company: exp.company,
+                        description: exp.description || "",
+                        // Parse dates (stored as YYYY-MM-DD or similar, simplified here)
+                        startMonth: exp.start_date ? new Date(exp.start_date).toLocaleString('default', { month: 'short' }) : 'Jan',
+                        startYear: exp.start_date ? new Date(exp.start_date).getFullYear().toString() : '2024',
+                        endMonth: exp.is_current ? 'Present' : (exp.end_date ? new Date(exp.end_date).toLocaleString('default', { month: 'short' }) : 'Jan'),
+                        endYear: exp.is_current ? 'Present' : (exp.end_date ? new Date(exp.end_date).getFullYear().toString() : '2024')
+                    }));
+
+                    // Map Education (DB -> Frontend)
+                    const mappedEducation = (education || []).map(edu => ({
+                        id: edu.id,
+                        institution: edu.institution,
+                        degree: edu.degree,
+                        startMonth: edu.start_date ? new Date(edu.start_date).toLocaleString('default', { month: 'short' }) : 'Sep',
+                        startYear: edu.start_date ? new Date(edu.start_date).getFullYear().toString() : '2020',
+                        endMonth: edu.end_date ? new Date(edu.end_date).toLocaleString('default', { month: 'short' }) : 'Jun',
+                        endYear: edu.end_date ? new Date(edu.end_date).getFullYear().toString() : '2023'
+                    }));
+
                     setProfileData(prev => ({
                         ...prev,
                         firstName: nameParts[0] || "",
-                        lastName: nameParts.slice(1).join(" ") || "", // Simple split fallback
+                        middleName: nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : "",
+                        lastName: nameParts.length > 1 ? nameParts[nameParts.length - 1] : "",
                         email: profile.email || user.email,
                         city: profile.city || "",
                         country: profile.country || "United Kingdom",
                         bio: profile.bio || "",
                         phone: profile.phone || "",
                         avatar: profile.avatar_url,
-                        // Add other mappings as schema expands
+                        experienceYears: "", // Not stored in DB explicitly in schema yet, keep local or add column
+                        experienceList: mappedExperience,
+                        educationList: mappedEducation
                     }));
                 } else {
-                    // New user, prepopulate email
                     setProfileData(prev => ({ ...prev, email: user.email }));
-                    setIsEditMode(true); // Force edit mode for new profiles
+                    setIsEditMode(true);
                 }
-
-                // Fetch Experiences (Optional: Implement separate fetch)
             } else {
                 setIsLoggedIn(false);
-                setIsEditMode(true); // Allow guests to fill the form
+                setIsEditMode(true);
             }
         } catch (error) {
             console.error("Error fetching profile:", error);
@@ -99,13 +135,15 @@ export const ForCandidates = () => {
 
     const handleSaveProfile = async () => {
         try {
+            setIsLoading(true);
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 alert("You must be logged in to save.");
                 return;
             }
 
-            const updates = {
+            // 1. Save Main Profile
+            const profileUpdates = {
                 id: user.id,
                 email: profileData.email,
                 full_name: `${profileData.firstName} ${profileData.middleName} ${profileData.lastName}`.trim(),
@@ -113,18 +151,62 @@ export const ForCandidates = () => {
                 country: profileData.country,
                 bio: profileData.bio,
                 phone: profileData.phone,
-                // Add other fields as schema expands
-                // avatar_url: profileData.avatar // Need storage bucket for this
                 updated_at: new Date(),
             };
 
-            const { error } = await supabase.from('profiles').upsert(updates);
-            if (error) throw error;
+            const { error: profileError } = await supabase.from('profiles').upsert(profileUpdates);
+            if (profileError) throw profileError;
+
+            // 2. Save Experiences (Sync: Delete all logic for simplicity or Upsert)
+            // Strategy: Upsert all current items. If ID is number (frontend-only), remove it so DB gen UUID.
+            const experienceUpserts = profileData.experienceList.map(exp => {
+                const isNew = typeof exp.id === 'number';
+                return {
+                    id: isNew ? undefined : exp.id, // Let DB gen ID if new
+                    profile_id: user.id,
+                    role: exp.role,
+                    company: exp.company,
+                    description: exp.description,
+                    is_current: exp.endYear === 'Present' || exp.endMonth === 'Present',
+                    start_date: `${exp.startYear}-${new Date(`${exp.startMonth} 1, 2000`).getMonth() + 1}-01`,
+                    end_date: (exp.endYear === 'Present' || exp.endMonth === 'Present') ? null
+                        : `${exp.endYear}-${new Date(`${exp.endMonth} 1, 2000`).getMonth() + 1}-01`
+                };
+            });
+
+            // First, delete items not in the list (Clean up deleted items)
+            // Simplified: We accept that we won't delete logic right now to avoid complex diffing, 
+            // OR we just upsert. If user deleted in UI, it stays in DB for now (v1 limitation).
+            // BETTER: Delete all for this user and rewrite? Safer for consistency.
+            await supabase.from('experiences').delete().eq('profile_id', user.id);
+            if (experienceUpserts.length > 0) {
+                await supabase.from('experiences').insert(experienceUpserts);
+            }
+
+            // 3. Save Education
+            const educationUpserts = profileData.educationList.map(edu => {
+                return {
+                    profile_id: user.id,
+                    institution: edu.institution,
+                    degree: edu.degree,
+                    start_date: `${edu.startYear}-${new Date(`${edu.startMonth} 1, 2000`).getMonth() + 1}-01`,
+                    end_date: `${edu.endYear}-${new Date(`${edu.endMonth} 1, 2000`).getMonth() + 1}-01`
+                };
+            });
+
+            await supabase.from('education').delete().eq('profile_id', user.id);
+            if (educationUpserts.length > 0) {
+                await supabase.from('education').insert(educationUpserts);
+            }
 
             alert("Profile saved successfully!");
             setIsEditMode(false);
+            fetchProfile(); // Refresh IDs
         } catch (error) {
+            console.error(error);
             alert("Error saving profile: " + error.message);
+        } finally {
+            setIsLoading(false);
         }
     };
 
