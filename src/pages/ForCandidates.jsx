@@ -54,7 +54,7 @@ export const ForCandidates = () => {
                     .from('experiences')
                     .select('*')
                     .eq('profile_id', user.id)
-                    .order('start_year', { ascending: false }); // Note: DB field is start_date, map logic needed
+                    .order('start_date', { ascending: false });
 
                 // 3. Fetch Education
                 const { data: education } = await supabase
