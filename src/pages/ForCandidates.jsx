@@ -171,6 +171,19 @@ export const ForCandidates = () => {
                 return;
             }
 
+            // Helper: Safe Date Formatter for DB (YYYY-MM-DD)
+            const formatDateForDB = (month, year) => {
+                if (!month || !year) return null;
+                if (month === 'Present' || year === 'Present') return null;
+
+                const monthIndex = MONTHS.indexOf(month);
+                if (monthIndex === -1) return `${year}-01-01`; // Default to Jan if invalid month
+
+                // Pad month with 0 if needed (e.g. 1 -> 01)
+                const m = (monthIndex + 1).toString().padStart(2, '0');
+                return `${year}-${m}-01`;
+            };
+
             // 1. Save Main Profile
             const profileUpdates = {
                 id: user.id,
@@ -191,7 +204,6 @@ export const ForCandidates = () => {
             const { error: profileError } = await supabase.from('profiles').upsert(profileUpdates);
             if (profileError) throw profileError;
 
-            // 2. Save Experiences (Sync: Delete all logic for simplicity or Upsert)
             // 2. Save Experiences
             const experienceUpserts = profileData.experienceList.map(exp => {
                 const isNew = typeof exp.id === 'number';
@@ -202,15 +214,18 @@ export const ForCandidates = () => {
                     company: exp.company,
                     description: exp.description,
                     is_current: exp.endYear === 'Present' || exp.endMonth === 'Present',
-                    start_date: `${exp.startYear}-${new Date(`${exp.startMonth} 1, 2000`).getMonth() + 1}-01`,
+                    start_date: formatDateForDB(exp.startMonth, exp.startYear),
                     end_date: (exp.endYear === 'Present' || exp.endMonth === 'Present') ? null
-                        : `${exp.endYear}-${new Date(`${exp.endMonth} 1, 2000`).getMonth() + 1}-01`
+                        : formatDateForDB(exp.endMonth, exp.endYear)
                 };
             });
 
             if (experienceUpserts.length > 0) {
                 const { error: expError } = await supabase.from('experiences').upsert(experienceUpserts);
-                if (expError) console.error("Error saving experiences:", expError);
+                if (expError) {
+                    console.error("Error saving experiences:", expError);
+                    alert(`Failed to save experiences: ${expError.message}`);
+                }
             }
 
             // 3. Save Education
@@ -221,14 +236,17 @@ export const ForCandidates = () => {
                     profile_id: user.id,
                     institution: edu.institution,
                     degree: edu.degree,
-                    start_date: `${edu.startYear}-${new Date(`${edu.startMonth} 1, 2000`).getMonth() + 1}-01`,
-                    end_date: `${edu.endYear}-${new Date(`${edu.endMonth} 1, 2000`).getMonth() + 1}-01`
+                    start_date: formatDateForDB(edu.startMonth, edu.startYear),
+                    end_date: formatDateForDB(edu.endMonth, edu.endYear)
                 };
             });
 
             if (educationUpserts.length > 0) {
                 const { error: eduError } = await supabase.from('education').upsert(educationUpserts);
-                if (eduError) console.error("Error saving education:", eduError);
+                if (eduError) {
+                    console.error("Error saving education:", eduError);
+                    alert(`Failed to save education: ${eduError.message}`);
+                }
             }
 
             alert("Profile saved successfully!");
