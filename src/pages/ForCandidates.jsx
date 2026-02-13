@@ -205,10 +205,13 @@ export const ForCandidates = () => {
             if (profileError) throw profileError;
 
             // 2. Save Experiences
-            const experienceUpserts = profileData.experienceList.map(exp => {
+            // 2. Save Experiences (Split Insert/Update)
+            const newExperiences = [];
+            const existingExperiences = [];
+
+            profileData.experienceList.forEach(exp => {
                 const isNew = typeof exp.id === 'number';
-                return {
-                    id: isNew ? undefined : exp.id,
+                const payload = {
                     profile_id: user.id,
                     role: exp.role,
                     company: exp.company,
@@ -218,34 +221,62 @@ export const ForCandidates = () => {
                     end_date: (exp.endYear === 'Present' || exp.endMonth === 'Present') ? null
                         : formatDateForDB(exp.endMonth, exp.endYear)
                 };
+
+                if (isNew) {
+                    newExperiences.push(payload); // ID omitted, DB generates UUID
+                } else {
+                    existingExperiences.push({ ...payload, id: exp.id }); // ID included for update
+                }
             });
 
-            if (experienceUpserts.length > 0) {
-                const { error: expError } = await supabase.from('experiences').upsert(experienceUpserts);
-                if (expError) {
-                    console.error("Error saving experiences:", expError);
-                    alert(`Failed to save experiences: ${expError.message}`);
+            if (newExperiences.length > 0) {
+                const { error: insertErr } = await supabase.from('experiences').insert(newExperiences);
+                if (insertErr) {
+                    console.error("Error inserting experiences:", insertErr);
+                    alert(`Failed to add new experiences: ${insertErr.message}`);
+                }
+            }
+            if (existingExperiences.length > 0) {
+                const { error: updateErr } = await supabase.from('experiences').upsert(existingExperiences);
+                if (updateErr) {
+                    console.error("Error updating experiences:", updateErr);
+                    alert(`Failed to update experiences: ${updateErr.message}`);
                 }
             }
 
-            // 3. Save Education
-            const educationUpserts = profileData.educationList.map(edu => {
+            // 3. Save Education (Split Insert/Update)
+            const newEducation = [];
+            const existingEducation = [];
+
+            profileData.educationList.forEach(edu => {
                 const isNew = typeof edu.id === 'number';
-                return {
-                    id: isNew ? undefined : edu.id,
+                const payload = {
                     profile_id: user.id,
                     institution: edu.institution,
                     degree: edu.degree,
                     start_date: formatDateForDB(edu.startMonth, edu.startYear),
                     end_date: formatDateForDB(edu.endMonth, edu.endYear)
                 };
+
+                if (isNew) {
+                    newEducation.push(payload);
+                } else {
+                    existingEducation.push({ ...payload, id: edu.id });
+                }
             });
 
-            if (educationUpserts.length > 0) {
-                const { error: eduError } = await supabase.from('education').upsert(educationUpserts);
-                if (eduError) {
-                    console.error("Error saving education:", eduError);
-                    alert(`Failed to save education: ${eduError.message}`);
+            if (newEducation.length > 0) {
+                const { error: insertErr } = await supabase.from('education').insert(newEducation);
+                if (insertErr) {
+                    console.error("Error inserting education:", insertErr);
+                    alert(`Failed to add new education: ${insertErr.message}`);
+                }
+            }
+            if (existingEducation.length > 0) {
+                const { error: updateErr } = await supabase.from('education').upsert(existingEducation);
+                if (updateErr) {
+                    console.error("Error updating education:", updateErr);
+                    alert(`Failed to update education: ${updateErr.message}`);
                 }
             }
 
