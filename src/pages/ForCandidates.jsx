@@ -150,11 +150,46 @@ export const ForCandidates = () => {
 
 
 
-    const handleImageUpload = (e) => {
+    const handleImageUpload = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            const imageUrl = URL.createObjectURL(file);
-            setProfileData({ ...profileData, avatar: imageUrl });
+        if (!file) return;
+
+        try {
+            setIsLoading(true);
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("User not found");
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            // 1. Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            // 2. Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            // 3. Update State
+            setProfileData({ ...profileData, avatar: publicUrl });
+
+            // 4. Auto-save the avatar field immediately to profile
+            await supabase.from('profiles').upsert({
+                id: user.id,
+                avatar_url: publicUrl,
+                updated_at: new Date()
+            });
+
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            alert("Error uploading image: " + error.message);
+        } finally {
+            setIsLoading(false);
         }
     };
 
