@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
+import { ConstructionBanner } from './components/layout/ConstructionBanner';
 import { Home } from './pages/Home';
 import { ForCompanies } from './pages/ForCompanies';
 
@@ -14,7 +16,6 @@ import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
 import { Auth } from './pages/Auth';
 import ScrollToTop from './components/utils/ScrollToTop';
-import { useEffect } from 'react';
 import { supabase } from './lib/supabaseClient';
 
 // Helper component to handle auth redirects
@@ -46,6 +47,19 @@ const AuthRedirectHandler = () => {
 function App() {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const [showBanner, setShowBanner] = useState(false);
+
+  useEffect(() => {
+    const isDismissed = sessionStorage.getItem('construction_banner_dismissed');
+    if (!isDismissed) {
+      setShowBanner(true);
+    }
+  }, []);
+
+  const handleDismissBanner = () => {
+    setShowBanner(false);
+    sessionStorage.setItem('construction_banner_dismissed', 'true');
+  };
 
   if (!supabaseUrl || !supabaseKey) {
     return (
@@ -72,8 +86,12 @@ function App() {
       <ScrollToTop />
       <AuthRedirectHandler />
       <div className="min-h-screen flex flex-col font-sans text-text-main bg-surface-muted">
-        <Navbar />
-        <main className="flex-grow pt-0">
+        {showBanner && <ConstructionBanner onClose={handleDismissBanner} />}
+
+        {/* Pass down style to Navbar to adjust top position if banner is visible */}
+        <Navbar style={{ top: showBanner ? '48px' : '0' }} />
+
+        <main className={`flex-grow ${showBanner ? 'pt-[48px]' : 'pt-0'} transition-all duration-300`}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/companies" element={<ForCompanies />} />

@@ -3,7 +3,7 @@ import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 
-export const Navbar = () => {
+export const Navbar = ({ style }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
@@ -31,6 +31,7 @@ export const Navbar = () => {
 
     return (
         <nav
+            style={style}
             className={`fixed w-full z-50 transition-all duration-300 ${isScrolled || location.pathname !== '/'
                 ? 'bg-surface/90 backdrop-blur-md shadow-sm py-2'
                 : 'bg-transparent py-4'
